@@ -1,0 +1,19 @@
+version: "2"
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "192.168.1.81:8080:80"
+  app:
+    container_name: social-api
+    restart: always
+    build: . 
+    ports:
+      - "5000:5000"
+    links:
+      - mongo
+  mongo:
+    container_name: mongo-social-api
+    image: mongo
+    ports:
+      - "27017:27017"
