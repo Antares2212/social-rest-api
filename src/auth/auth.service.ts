@@ -9,12 +9,14 @@ import { CreateUserDto } from '../dto/user-create.dto';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { jwtConstants } from './../../constants';
 import { UserNotFoundExeption } from 'src/errors';
+import { AutoIdService } from 'src/services/auto-id.service';
 
 @Injectable()
 export class AuthService {
 
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly autoIdService: AutoIdService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -41,6 +43,7 @@ export class AuthService {
     const { password, ...result } = createUserDto
     const hashedPassword = await bcrypt.hashSync(password, 10);
     const user = new this.userModel({ password: hashedPassword, ...result });
+    user.id = await this.autoIdService.getNextSequence('user')
     return await user.save()
   }
-}
+} 
