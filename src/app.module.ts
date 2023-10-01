@@ -1,11 +1,8 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ErrorMiddleware } from './middlewares/error.middleware';
-import { AllExeptionFilter } from './core/all-exception.filter';
-import { APP_FILTER } from '@nestjs/core';
+import { AppService } from './app.service';
+import { AppController } from './app.controller';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -13,9 +10,6 @@ import { APP_FILTER } from '@nestjs/core';
     MongooseModule.forRoot('mongodb://127.0.0.1:27017/social')
   ],
   controllers: [AppController],
-  providers: [AppService, {
-    provide: APP_FILTER,
-    useClass: AllExeptionFilter
-  }],
+  providers: [AppService],
 })
 export class AppModule {}

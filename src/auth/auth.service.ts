@@ -1,48 +1,46 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose'
+import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose'
-import { User, UserDocument } from './schema/user.schema'
+
 import * as bcrypt from 'bcrypt'
-import * as jwt from 'jsonwebtoken'
-import * as crypto from 'crypto';
+
+import { CreateUserDto } from '../dto/user-create.dto';
+import { User, UserDocument } from 'src/schemas/user.schema';
+import { jwtConstants } from './../../constants';
+import { UserNotFoundExeption } from 'src/errors';
 
 @Injectable()
 export class AuthService {
 
-  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly jwtService: JwtService,
+  ) {}
 
   private generateToken(user: any): string {
-    const payload = { username: user.username, sub: user._id }
-    const secretKey = crypto.randomBytes(32).toString('hex')
-    const options = { expiresIn: '24h' }
-    return jwt.sign(payload, secretKey, options)
+    const payload = { username: user.username, sub: user._id };
+    const secretKey = jwtConstants.secret
+    const options = { expiresIn: '24h' };
+    const token = this.jwtService.sign(payload, { secret: secretKey, ...options });
+    return token;
   }
   
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.userModel.findOne({ username }).exec()
+    const user = await this.userModel.findOne({ username: username }).exec()
+    
+    if (!user) throw new UserNotFoundExeption()    
 
-    if (!user) {
-      throw new HttpException(
-        { status: HttpStatus.NOT_FOUND, error: 'Invalid Credential' },
-        HttpStatus.NOT_FOUND
-      )
-    }
-
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user
-      const token = this.generateToken(result)
-      return { token }
+    if (user && (await bcrypt.compareSync(password, user.password))) {
+      const { password, ...result } = user      
+      return this.generateToken(result)
     }
   }
-
-  async registerUser(username: string, email: string, password: string): Promise<any> {
-    const hashedPassword = await bcrypt.hash(password, 10)
-    const user = new this.userModel({
-      username,
-      email,
-      password: hashedPassword
-    })
-
-    return user.save()
+  
+  async registerUser(createUserDto: CreateUserDto): Promise<User> {
+    const { password, ...result } = createUserDto
+    const hashedPassword = await bcrypt.hashSync(password, 10);
+    const user = new this.userModel({ password: hashedPassword, ...result });
+    return await user.save()
   }
 }

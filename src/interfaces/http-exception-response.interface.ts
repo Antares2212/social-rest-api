@@ -4,6 +4,7 @@ export interface HttpExceptionResponse {
 }
 
 export interface CustomExceptionResponse extends HttpExceptionResponse {
+  message: Array<[]>,
   path: string
   method: string
   timeStamp: Date
