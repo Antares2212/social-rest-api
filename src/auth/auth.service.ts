@@ -22,7 +22,7 @@ export class AuthService {
   ) {}
 
   private generateToken(user: any): string {
-    const payload = { username: user.username, sub: user._id };
+    const payload = { username: user.username, userId: user.id };        
     const secretKey = jwtConstants.secret
     const options = { expiresIn: '24h' };
     const token = this.jwtService.sign(payload, { secret: secretKey, ...options });
@@ -30,13 +30,14 @@ export class AuthService {
   }
   
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.userModel.findOne({ username: username }).exec()
+    const user = await this.userModel.findOne({ username: username }).exec() 
     
     if (!user) throw new UserNotFoundExeption()    
 
     if (user && (await bcrypt.compareSync(password, user.password))) {
-      const { password, ...result } = user      
-      return this.generateToken(result)
+      const { password, ...result } = user
+        
+      return this.generateToken(result['_doc'])
     }
   }
   
