@@ -16,11 +16,11 @@ export class UserService {
   ) {}
 
   async getAll(): Promise<User[]> {
-    return await this.userModel.find()
+    return await this.userModel.find().exec()
   }
 
   async getOne(userId: number): Promise<User> {
-    const user = await this.userModel.findOne({ id: userId })
+    const user = await this.userModel.findOne({ id: userId }).exec()
 
     if (!user) throw new UserNotFoundExeption()
 
