@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsEmail, MinLength } from "class-validator";
 import { ErrorMsg } from "src/errors/errors-list.error";
-export class CreateUserDto {
+export class UserCreateDto {
   @IsNotEmpty({ message: ErrorMsg.UserNameEmpty })
   @MinLength(5, { message: ErrorMsg.UserNameMin(5) })
   readonly username: string;
