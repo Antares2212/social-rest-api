@@ -3,13 +3,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
-import { AutoIdService } from './services/auto-id.service';
-import { AutoId, AutoIdSchema } from './schemas/auto-id.schema';
+import { AutoIdModule } from './modules/auto-id.module';
+import { UserModule } from './modules/user.module';
 
 @Module({
   imports: [
-    AuthModule,
     MongooseModule.forRoot('mongodb://127.0.0.1:27017/social'),
+    AuthModule,
+    AutoIdModule,
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService],
